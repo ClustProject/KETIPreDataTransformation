@@ -5,13 +5,13 @@ from numpy import array
 
 
 class LearningDataSet():
-    def __init__(self, data_frequency_sec, learning_information):
+    def __init__(self, learning_information):
         self.learning_information = learning_information
-        self.future_sec = learning_information['future_sec']
-        self.past_sec = learning_information['past_sec']
+        self.future_num = learning_information['future_num']
+        self.past_num = learning_information['past_num']
         self.target_feature = learning_information['target_feature']
-        self.data_frequency_sec = data_frequency_sec
-        self.future_num, self.past_num = self.get_number_of_step(self.data_frequency_sec, self.past_sec, self.data_frequency_sec)
+        print("future num:", self.future_num)
+
         pass
     
     def get_Xy(self, data, target_data_preparation_method):
@@ -26,12 +26,13 @@ class LearningDataSet():
         learning_method = learning_information['learning_method']
         
         if learning_style == 'LSTM':
+            print("self.past_num:", self.past_num)
             data_X, data_y = self.make_dataset_for_LSTM_style(data_X_df, data_y_df, self.past_num)
             print(data_X.shape)
             n_seq = 2
             if learning_method=='CNNLSTM':      
                 n_steps = int(self.past_num/n_seq)
-                redata_X = data_X.reshape((data_X.shape[0],n_seq, n_steps, n_features ))
+                data_X = data_X.reshape((data_X.shape[0],n_seq, n_steps, n_features ))
             elif learning_method =='ConvLSTM':
                 # reshape from [samples, timesteps] into [samples, timesteps, rows, columns, features]
                 n_steps = int(self.past_num/n_seq)
@@ -137,7 +138,4 @@ class LearningDataSet():
 
         return data_X, data_y
 
-    def get_number_of_step(self, future_sec, past_sec, frequency_sec):
-        future_num = int(future_sec/frequency_sec)
-        past_num = int(past_sec/frequency_sec)
-        return future_num, past_num
+
