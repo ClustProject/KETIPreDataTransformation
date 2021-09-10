@@ -69,22 +69,23 @@ class DataFrameScaling():
         return output
 
 class DataInverseScaling(): 
-    def __init__(self,scaling_method, scale_columns, target_column, scaler):
+    def __init__(self,scaling_method, target_column, scaler ,scale_columns):
         self.scaling_method = scaling_method
-        self.scale_columns = scale_columns
         self.target_column = target_column
         self.scaler = scaler
+        self.scale_columns = scale_columns
 
     def get_inv_Scaling_data(self, data):
-        inv_data = data.copy()
+
         for t_method in self.scaling_method:
             if t_method =='log':
-                inv_data= self._get_inverse_log_data(inv_data)
+                inv_data= self._get_inverse_log_data(data)
             if t_method =='scale':
-                inv_data= self._get_inverse_scaled_data(inv_data)
+                inv_data= self._get_inverse_scaled_data(data)
         return inv_data
     
     def _get_inverse_scaled_data(self, data):
+        
         dummy = pd.DataFrame(np.zeros((len(data), len(self.scale_columns))), columns=self.scale_columns)
         dummy[self.target_column] = data
         dummy = pd.DataFrame(self.scaler.inverse_transform(dummy), columns = self.scale_columns)
