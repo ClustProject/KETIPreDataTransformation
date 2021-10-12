@@ -22,29 +22,25 @@ class LearningDataSet():
         # if learning method is LSTM
         learning_information = self.learning_information
         learning_parameter = learning_information['learning_parameter']
-        learning_style = learning_information['learning_style']
         learning_method = learning_information['learning_method']
         
-        if learning_style == 'LSTM':
-            print("self.past_num:", self.past_num)
-            data_X, data_y = self.make_dataset_for_LSTM_style(data_X_df, data_y_df, self.past_num)
-            print(data_X.shape)
-            n_seq = 2
-            if learning_method=='CNNLSTM':      
-                n_steps = int(self.past_num/n_seq)
-                data_X = data_X.reshape((data_X.shape[0],n_seq, n_steps, n_features ))
-            elif learning_method =='ConvLSTM':
-                # reshape from [samples, timesteps] into [samples, timesteps, rows, columns, features]
-                n_steps = int(self.past_num/n_seq)
-                data_X = data_X.reshape((data_X.shape[0], n_seq, 1, n_steps, n_features))
-            else:
-                n_steps = self.past_num
-            learning_information['n_seq'] = n_seq   
-            learning_information['n_steps'] = n_steps 
-        
-        #Modify code below to adaptively for your learning purposes
+
+        print("self.past_num:", self.past_num)
+        data_X, data_y = self.make_dataset_for_LSTM_style(data_X_df, data_y_df, self.past_num)
+        print(data_X.shape)
+        n_seq = 2
+        if learning_method=='CNNLSTM':      
+            n_steps = int(self.past_num/n_seq)
+            data_X = data_X.reshape((data_X.shape[0],n_seq, n_steps, n_features ))
+        elif learning_method =='ConvLSTM':
+            # reshape from [samples, timesteps] into [samples, timesteps, rows, columns, features]
+            n_steps = int(self.past_num/n_seq)
+            data_X = data_X.reshape((data_X.shape[0], n_seq, 1, n_steps, n_features))
         else:
-            data_X, data_y = self.make_dataset_for_LSTM_style(data_X_df, data_y_df, self.past_num)
+            n_steps = self.past_num
+        learning_information['n_seq'] = n_seq   
+        learning_information['n_steps'] = n_steps 
+
         return data_X, data_y, learning_information
     
     # Separate the original dataset into X and y by the target colum, future num, method
