@@ -14,8 +14,7 @@ def get_scale_columns(data):
 class DataFrameScaling():
     def __init__(self, data, scaling_method):
         self.scaling_method = scaling_method
-        self.scale_columns = e
-        (data)
+        self.scale_columns = get_scale_columns(data)
         self.data = data
 
     #scaler Manipulation
@@ -86,7 +85,6 @@ class DataInverseScaling():
         return inv_data
     
     def _get_inverse_scaled_data(self, data):
-        
         dummy = pd.DataFrame(np.zeros((len(data), len(self.scale_columns))), columns=self.scale_columns)
         dummy[self.target_column] = data
         dummy = pd.DataFrame(self.scaler.inverse_transform(dummy), columns = self.scale_columns)
