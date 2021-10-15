@@ -53,28 +53,25 @@ class LearningDataSet():
         
         # if learning method is LSTM
         learning_information = self.learning_information
-        learning_style = learning_information['learning_style']
         learning_method = learning_information['learning_method']
         
-        if learning_style == 'LSTM':
-            data_X = data_X_df.values.reshape(-1, self.past_num, n_features)
-            print(data_X.shape)
-            n_seq = 2
-            if learning_method=='CNNLSTM':      
-                n_steps = int(self.past_num/n_seq)
-                redata_X = data_X.reshape((data_X.shape[0],n_seq, n_steps, n_features ))
-            elif learning_method =='ConvLSTM':
-                # reshape from [samples, timesteps] into [samples, timesteps, rows, columns, features]
-                n_steps = int(self.past_num/n_seq)
-                data_X = data_X.reshape((data_X.shape[0], n_seq, 1, n_steps, n_features))
-            else:
-                n_steps = self.past_num
-            learning_information['n_seq'] = n_seq   
-            learning_information['n_steps'] = n_steps 
-        
-        #Modify code below to adaptively for your learning purposes
+
+        data_X = data_X_df.values.reshape(-1, self.past_num, n_features)
+        print(data_X.shape)
+        n_seq = 2
+        if learning_method=='CNNLSTM':      
+            n_steps = int(self.past_num/n_seq)
+            redata_X = data_X.reshape((data_X.shape[0],n_seq, n_steps, n_features ))
+        elif learning_method =='ConvLSTM':
+            # reshape from [samples, timesteps] into [samples, timesteps, rows, columns, features]
+            n_steps = int(self.past_num/n_seq)
+            data_X = data_X.reshape((data_X.shape[0], n_seq, 1, n_steps, n_features))
         else:
-            data_X = data_X_df.values.reshape(-1, self.past_num, n_features)
+            n_steps = self.past_num
+        learning_information['n_seq'] = n_seq   
+        learning_information['n_steps'] = n_steps 
+        
+        print(data_X)
         return data_X, learning_information
     
     # Separate the original dataset into X and y by the target colum, future num, method

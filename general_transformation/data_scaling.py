@@ -14,7 +14,8 @@ def get_scale_columns(data):
 class DataFrameScaling():
     def __init__(self, data, scaling_method):
         self.scaling_method = scaling_method
-        self.scale_columns = get_scale_columns(data)
+        self.scale_columns = e
+        (data)
         self.data = data
 
     #scaler Manipulation
