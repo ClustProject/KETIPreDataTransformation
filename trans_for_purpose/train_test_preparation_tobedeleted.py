@@ -7,10 +7,7 @@ import numpy as np
 from KETIPreDataTransformation.general_transformation import data_scaling
 #inverse transformation
 
-def get_train_test_by_ratio(data, train_length_ratio):
-    train_length=int(len(data)*train_length_ratio)
-    train, test = data[:train_length], data[train_length:]
-    return train, test
+
     
 #General
 def get_train_test_data(station_flag, data, test_length):
