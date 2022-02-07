@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np 
 import datetime
 import matplotlib.pyplot as plt
+
 class FeatureExtension():
     
     def __init__(self):
@@ -34,19 +35,6 @@ class FeatureExtension():
             ax.axis('tight')
         return data
 
-    def add_time_Sine_Cosine_features(self, data):
-        import datetime
-        timestamp_s = data.index.map(datetime.datetime.timestamp)
-        hour = 60 * 60
-        day = 24* hour
-        year = 365.2425 * day
-        #data ['hour_sin'] = np.sin(timestamp_s/hour*(2*np.pi))
-        #data ['day_sin'] =  np.sin(timestamp_s/day*(2*np.pi))
-        #data ['year_sin'] = np.sin(timestamp_s/year*(2*np.pi))
-        data ['hour_cos'] = np.cos(timestamp_s/hour*(2*np.pi))
-        data ['day_cos'] =  np.cos(timestamp_s/day*(2*np.pi))
-        data ['year_cos'] = np.cos(timestamp_s/year*(2*np.pi))
-        return data
     
     def workday_feature_genaration(self, data, country):
         index_name = data.index.name
@@ -95,44 +83,3 @@ class FeatureExtension():
           
         data = data.interpolate(method='values')
         return data
-
-"""     
-class FeatureEngineering():
-    def __init__(self):
-        pass
-    
-    
-    
-    def oneHotEncoding(self, data, one_hot_columns):
-        #one_hot_columns = list(data.select_dtypes(include=['category']).columns)
-        dummy_data = pd.get_dummies(data, columns=one_hot_columns)
-        return dummy_data
-    
-    def data_feature_engineering_air(self, data):
-        data = self.time_feature_genaration(data, 'SouthKorea')
-        data = feature_air.air_feature_genaration(data)
-        data = feature_air.air_ratio_feature_generation(data)
-        
-        one_hot_columns = list(data.select_dtypes(include=['category']).columns)
-        data = self.oneHotEncoding(data, one_hot_columns)
-        return data
-        
-    def feature_selection(self, data, feature_list):
-        if feature_list == "all":
-            data = data
-        else:
-            data = data[feature_list]
-        return data
-           
-"""
-"""
-from KETIPreDataIntegration.feature_engineering import feature_engineering
-fe = feature_engineering.FeatureEngineering()
-nation = 'SouthKorea'
-vector_feature_list = {'out_wind_speed':['out_wind_direction', ['out_wind_x', 'out_wind_y']]}
-data_0 = fe.feature_extension(data_0, vector_feature_list, nation)
-data_partial_clean[0][0] = data_0
-ComplexDataSet = DataIntegration(data_partial_clean[0], 10)
-print(ComplexDataSet.partial_dataset_info.frequency['average'])
-print(ComplexDataSet.partial_dataset_info.partialSet_data_type)
-"""

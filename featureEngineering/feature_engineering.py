@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 
-import KETIPreDataTransformation.feature_engineering.feature_extension as fe
+import KETIPreDataTransformation.featureEngineering.feature_extension_old as fe
         
 class FeatureEngineering():
     def __init__(self):
@@ -20,11 +20,3 @@ class FeatureEngineering():
         return Data_Ex
         
     
-    
-
-"""
-def get_scaledD(self, Data):
-    mD = pre.ProcessedData()
-    scaler, data_scale = mD.data_scaling(Data, )
-    return scaler, data_scale
-"""
