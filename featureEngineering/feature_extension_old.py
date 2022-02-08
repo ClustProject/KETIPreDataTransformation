@@ -35,42 +35,6 @@ class FeatureExtension():
             ax.axis('tight')
         return data
 
-    
-    def workday_feature_genaration(self, data, country):
-        index_name = data.index.name
-        data = data.reset_index()
-        
-        #1. dayofweek_grade
-        data['dayofweek_grade'] = data[index_name].dt.day_name()
-        data['dayofweek_grade'] = data['dayofweek_grade'].astype('category')
-        
-        if country == 'SouthKorea':
-            from workalendar.asia import SouthKorea
-            calendar = SouthKorea()
-        else:
-            from workalendar.europe import italy
-            calendar = italy()
-    
-        holiday_list = calendar.holidays(2017)+calendar.holidays(2018)+calendar.holidays(2019)+calendar.holidays(2020)+calendar.holidays(2020)
-        holiday_list = list(zip(*holiday_list))[0]
-    
-        data['dayoff_grade'] = 'dayon'
-        data.loc[data['dayofweek_grade'].isin(['Sunday', 'Saturday']), 'dayoff_grade']='dayoff' 
-        data.loc[data[index_name].dt.date.isin(holiday_list), 'dayoff_grade']='dayoff' 
-        data['dayoff_grade'] = pd.Categorical(data['dayoff_grade'], categories =['dayon', 'dayoff'], ordered = True)
-    
-        #2. worktime_grade
-        data['worktime_grade']='work' 
-        data.loc[data[index_name].dt.hour < 9, 'worktime_grade']='notwork'
-        data.loc[data[index_name].dt.hour > 18, 'worktime_grade']='notwork'
-        data.loc[data['dayoff_grade']=='dayoff', 'worktime_grade']='notwork' 
-        data['worktime_grade'] = pd.Categorical(data['worktime_grade'], categories =['work', 'notwork'], ordered = True)
-        
-        data = data.drop('dayofweek_grade', axis =1)
-        data = data.set_index(index_name)
-        return data
-    
-
 
     def add_ratio_features(self, data):
         import itertools
