@@ -4,17 +4,10 @@ import numpy as np
 import os
 import joblib
 
-def get_scale_columns(data):
-    integer_columns = list(data.select_dtypes(include=['int64', 'int32']).columns)
-    float_columns = list(data.select_dtypes(include=['float64', 'float32']).columns)
-    object_columns = list(data.select_dtypes(include=['object']).columns)
-    scale_columns = integer_columns + float_columns
-    return scale_columns
-
 class DataFrameScaling():
     def __init__(self, data, scaling_method):
         self.scaling_method = scaling_method
-        self.scale_columns = get_scale_columns(data)
+        self.scale_columns = self.get_scale_columns(data)
         self.data = data
 
     #scaler Manipulation
@@ -35,7 +28,6 @@ class DataFrameScaling():
         joblib.dump(scaler, scaler_file_name)
         
     def set_scaler_from_file(self, scaler_file_name):
-        
         self.scaler = joblib.load(scaler_file_name)
         return self.scaler
     
@@ -67,6 +59,13 @@ class DataFrameScaling():
         output= data.copy()
         output[self.scale_columns] = np.log(output[self.scale_columns]+1)
         return output
+    
+    def get_scalable_columns(self, data):
+        integer_columns = list(data.select_dtypes(include=['int64', 'int32']).columns)
+        float_columns = list(data.select_dtypes(include=['float64', 'float32']).columns)
+        object_columns = list(data.select_dtypes(include=['object']).columns)
+        scale_columns = integer_columns + float_columns
+        return scale_columns
 
 class DataInverseScaling(): 
     def __init__(self,scaling_method, target_column, scaler ,scale_columns):

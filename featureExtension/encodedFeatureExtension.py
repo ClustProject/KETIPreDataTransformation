@@ -11,7 +11,7 @@ class EncodedFeature():
         This function generate one_hot_encoded columns
         Example
         -------
-        >>> from KETIPreDataTransformation.featureEngineering.encodedFeatureExtension import EncodedFeature
+        >>> from KETIPreDataTransformation.featureExtension.encodedFeatureExtension import EncodedFeature
         >>> EF = EncodedFeature()
         >>> df_generated = EF.encode_onehot(original_df, columnNameList)
 
