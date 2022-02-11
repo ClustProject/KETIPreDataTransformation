@@ -3,8 +3,9 @@ import pandas as pd
 import numpy as np
 import os
 import joblib
-
+import json
 # 2022 New Code
+
 class DataScaler():
     def __init__(self, data, scaling_method):
         """
@@ -56,12 +57,13 @@ class DataScaler():
         Returns: scaler
             scaler
         """
-        import hashlib
-        scaleColumnList = '/'.join(self.scale_columns)
-        print(scaleColumnList)
-        hash_object = hashlib.md5(scaleColumnList.encode('utf-8'))
-        scaleColumnList= hash_object.hexdigest()
-        self.scaleFilePath = os.path.join(root_path, self.scaling_method, scaleColumnList)
+        jsonFilePath = os.path.join(root_path, "scaler_list.json")
+        scaler_list = self.readJson(jsonFilePath)
+        encoded_scaler_list = self.encodeHashStyle(self.scale_columns)
+        scaler_list[encoded_scaler_list] = self.scale_columns
+        self.writeJson(jsonFilePath, scaler_list)
+
+        self.scaleFilePath = os.path.join(root_path, self.scaling_method, encoded_scaler_list)
         self.scalerFileName = os.path.join(self.scaleFilePath, "scaler.pkl")
         self.dataToBeScaled = self.data[self.scale_columns]
         if os.path.isfile(self.scalerFileName):
@@ -74,6 +76,21 @@ class DataScaler():
             print("Make New scaler File")
 
         return self.scaler
+
+    def readJson(self, jsonFilePath):
+        with open(jsonFilePath, 'r') as json_file:
+            jsonText = json.load(json_file)
+        return jsonText
+
+    def writeJson(self, jsonFilePath, text):
+        with open(jsonFilePath, 'w') as outfile:
+            outfile.write(json.dumps(text))
+
+    def encodeHashStyle(self, text):
+        import hashlib
+        hash_object = hashlib.md5(str(text).encode('utf-8'))
+        hashedText= hash_object.hexdigest()
+        return hashedText
 
     def transform(self):
         """
