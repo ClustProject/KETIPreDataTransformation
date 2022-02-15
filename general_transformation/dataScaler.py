@@ -7,7 +7,7 @@ import json
 # 2022 New Code
 
 class DataScaler():
-    def __init__(self, data, scaling_method):
+    def __init__(self, data, scaling_method, rootPath):
         """
         This class generates a scaler and transforms the data. 
         Checks whether the scaler file is already saved, and if it exists, it is loaded and used. 
@@ -29,10 +29,25 @@ class DataScaler():
             original Input DataFrame
         scaling_method: string
             one of ['minmax','standard','maxabs','robust']
+        root_path: string(os.path.join)
+            Root path where the scaler will be stored
         """ 
         self.scaling_method = scaling_method #
         self.scale_columns = self._get_scalable_columns(data)
         self.data = data
+        self.setSalerInfo(rootPath)
+
+    def setSalerInfo(self, rootPath):
+        """
+        This function set scalerListJsonFilePath and update it. and define scalerFileName.
+        -------
+        """
+        self.scalerListJsonFilePath = os.path.join(rootPath, "scaler_list.json")
+        scaler_list = self.readJson(self.scalerListJsonFilePath)
+        encoded_scaler_list = self.encodeHashStyle(self.scale_columns)
+        scaler_list[encoded_scaler_list] = self.scale_columns
+        self.writeJson(self.scalerListJsonFilePath, scaler_list)
+        self.scalerFileName = os.path.join(rootPath, self.scaling_method, encoded_scaler_list, "scaler.pkl")
 
     def setScaleColumns(self, scaleColumns):
         """
@@ -49,22 +64,13 @@ class DataScaler():
         self.scale_columns = scaleColumns
         #scaler Manipulation
 
-    def setScaler(self, root_path):
+    def setScaler(self):
         """
         The function set scaler. (generation or load based on root_path info, scale columns)
-        root_path: string(os.path.join)
-            Root path where the scaler will be stored
+        
         Returns: scaler
             scaler
         """
-        jsonFilePath = os.path.join(root_path, "scaler_list.json")
-        scaler_list = self.readJson(jsonFilePath)
-        encoded_scaler_list = self.encodeHashStyle(self.scale_columns)
-        scaler_list[encoded_scaler_list] = self.scale_columns
-        self.writeJson(jsonFilePath, scaler_list)
-
-        self.scaleFilePath = os.path.join(root_path, self.scaling_method, encoded_scaler_list)
-        self.scalerFileName = os.path.join(self.scaleFilePath, "scaler.pkl")
         self.dataToBeScaled = self.data[self.scale_columns]
         if os.path.isfile(self.scalerFileName):
             self.scaler = self._set_scaler_from_file(self.scalerFileName)        
@@ -78,6 +84,23 @@ class DataScaler():
         return self.scaler
 
     def readJson(self, jsonFilePath):
+        """
+        The function can read json file.  It can be used to find out column list of scaler file.
+        
+        Example
+        -------
+        >>> from KETIPreDataTransformation.general_transformation.dataScaler import DataScaler
+        >>> scalerRootpath = os.path.join('/Users','scaler')
+        >>> DS = DataScaler(df_features, 'minmax',scalerRootpath )
+        >>> scaler = DS.setScaler()
+        >>> df_features = DS.transform()
+        >>> y = os.path.split(os.path.dirname(DS.scalerFileName))
+        >>> scalerList = DS.readJson(DS.scalerListJsonFilePath)
+        >>> scalerList[y[-1]] # print column list of scaler
+
+        Returns: scaler
+            scaler
+        """
         with open(jsonFilePath, 'r') as json_file:
             jsonText = json.load(json_file)
         return jsonText
