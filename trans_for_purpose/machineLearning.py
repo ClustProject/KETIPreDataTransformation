@@ -8,17 +8,13 @@ def splitXy(data, X_col, y_col):
     y = data[y_col]
     return X, y
 
-def adaptXyByTargetInfo(X, y, future_num, method='mean'):
-
+def adaptXyByTargetInfo(X, y, future_num, method='step'):
     data_X= X[:len(X)- future_num]
-    # method == step
-    # if future_num is N, data_y(n) is y(n+future_num-1))
     if method=='step':
         if future_num ==0:
             data_y = y
         else:
             data_y = y[future_num:]
-    print(y)
     """
     #  method == mean
     # if future_num is N, data_y(n) is Mean(y(n)~y(n+(N-1))
@@ -39,16 +35,16 @@ def adaptXyByTargetInfo(X, y, future_num, method='mean'):
         # Modify the code below to adaptively change the shape of y depending on the situation 
         # by making more specific rules in the future
     """
-    return data_X.values, data_y.values
+    return data_X, data_y
 
-def getCleanXy(X, y, n_steps):
+def getCleanXy(X, y, past_step):
         Clean_X, Clean_y = list(), list()
         Nan_num=0
         
         # Remove set having any nan data
-        for i in range(len(X)- n_steps):
-            seq_x = X[i:i+n_steps].values
-            seq_y = y.iloc[[i+n_steps]].values
+        for i in range(len(X)- past_step):
+            seq_x = X[i:i+past_step].values
+            seq_y = y.iloc[[i+past_step-1]].values
             if np.isnan(seq_x).any() | np.isnan(seq_y).any():
                 Nan_num=Nan_num+1
             else:
@@ -56,7 +52,8 @@ def getCleanXy(X, y, n_steps):
                 Clean_y.append(seq_y)
         print("Removed Data Length:", Nan_num)
         Clean_X = array(Clean_X)
-        Clean_y = array(Clean_y).reshape(-1)
+        Clean_y = array(Clean_y).reshape(-1, len(y.columns))
+        #Clean_y = array(Clean_y)
 
         return Clean_X, Clean_y
 
