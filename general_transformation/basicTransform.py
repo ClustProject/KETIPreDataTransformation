@@ -4,7 +4,7 @@ import pandas as pd
 def getRobustScaledDF(DF):
     from sklearn.preprocessing import RobustScaler
     transformer = RobustScaler()
-    scaledDF = pd.DataFrame(transformer.fit_transform(DDF), index = DF.index, columns = DF.columns )
+    scaledDF = pd.DataFrame(transformer.fit_transform(DF), index = DF.index, columns = DF.columns )
     return scaledDF
 
 def get_corrMatrix(data):
