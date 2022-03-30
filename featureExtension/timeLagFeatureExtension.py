@@ -1,3 +1,4 @@
+#mylist = list(df_features.select_dtypes(include=['object']).columns)
 class TimeLagFeature():
     
     def __init__(self):

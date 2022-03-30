@@ -52,23 +52,17 @@ class TimeFeature():
         """ 
         
         extended_df = origin_df.copy()
-        
-        #1. dayofweek_grade
-        dayofweekFlag=False
-        if 'dayofweek' in extended_df:
+
+        if 'day_of_week' in extended_df:
             dayofweekFlag=True
             print("It has dayofweek column.")
-            
-        extended_df['dayofweek'] = extended_df.index.day_name()
-        extended_df['dayofweek'] = extended_df['dayofweek'].astype('category')
-        
-        extended_df['dayOff'] = 0
-        extended_df.loc[extended_df['dayofweek'].isin(['Sunday', 'Saturday']), 'dayOff']='1' 
-        extended_df.loc[extended_df.index.isin(holiday_list), 'dayOff']='1' 
+        else:
+            extended_df['day_of_week'] = extended_df.index.dayofweek
 
-        if dayofweekFlag == False:
-            extended_df = extended_df.drop('dayofweek', axis=1)
-            
+        extended_df['dayOff'] = 0
+        extended_df.loc[extended_df['day_of_week'].isin([5, 6]), 'dayOff']=1
+        extended_df.loc[extended_df.index.isin(holiday_list), 'dayOff']=1
+   
         return extended_df
 
     def extendWorkTimeFeature(self, origin_df, workStartTime, workEndTime):

@@ -1,7 +1,9 @@
 import numpy as np
 
 class PeriodicFeature():
-    
+    """
+    This class produces extended feature by periodically feature from data
+    """
     def __init__(self):
         pass
     
@@ -14,7 +16,7 @@ class PeriodicFeature():
         -------
         >>> from KETIPreDataTransformation.featureExtension.periodicFeatureExtension import PeriodicFeature
         >>> PF = PeriodicFeature()
-        >>> df_generated =  PF.extendCosSinFeature(df_features, 'hour', 24, 0, True)
+        >>> df_extended =  PF.extendCosSinFeature(data, 'hour', 24, 0, True)
 
         original_df: pandas.DataFrame
             original Input DataFrame

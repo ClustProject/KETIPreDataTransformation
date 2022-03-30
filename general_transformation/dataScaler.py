@@ -10,6 +10,7 @@ class DataScaler():
     def __init__(self, data, scaling_method, rootPath):
         """
         This class generates a scaler and transforms the data. 
+        All information should be described in [rootPath]/scaler_list.json. Before use this class, you can make the empty json file (only describing {})
         Checks whether the scaler file is already saved, and if it exists, it is loaded and used. 
         If it does not exist, a new scaler is created based on the input data and saved .
 
@@ -25,22 +26,24 @@ class DataScaler():
         >>> scaler = DS.setScaler(scalerRootpath)
         >>> result = DS.transform()
 
-        data: pandas.data
-            original Input DataFrame
-        scaling_method: string
-            one of ['minmax','standard','maxabs','robust']
-        root_path: string(os.path.join)
-            Root path where the scaler will be stored
-        """ 
+        :param data: input data to be scaled
+        :type data: dataFrame
+        :param scaling_method: scaling method 
+        :type scaling_method: string (one of ['minmax','standard','maxabs','robust'])
+        :param rootPath: Root path where the scaler will be stored 
+        :type rootPath: String (result of os.path.join('directory1','directory2'....))
+        """
         self.scaling_method = scaling_method #
         self.scale_columns = self._get_scalable_columns(data)
         self.data = data
-        self.setSalerInfo(rootPath)
+        self._setSalerInfo(rootPath)
 
-    def setSalerInfo(self, rootPath):
+    def _setSalerInfo(self, rootPath):
         """
-        This function set scalerListJsonFilePath and update it. and define scalerFileName.
-        -------
+        This function set scalerListJsonFilePath and update it. and describes detail information in [rootpath]/scaler_list.json
+        :param rootPath: Root path where the scaler will be stored 
+        :type rootPath: String (result of os.path.join('directory1','directory2'....))
+
         """
         self.scalerListJsonFilePath = os.path.join(rootPath, "scaler_list.json")
         scaler_list = self.readJson(self.scalerListJsonFilePath)
@@ -53,6 +56,9 @@ class DataScaler():
         """
         The function can be set to scale only a limited columns. (use self.setScaleColumns)
         Unless otherwise specified, scalers are created for scalable numeric data.
+
+        :param scaleColumns: limited column list to be scaled
+        :type scaleColumns: string list
 
         Example
         -------
@@ -73,7 +79,7 @@ class DataScaler():
         """
         self.dataToBeScaled = self.data[self.scale_columns]
         if os.path.isfile(self.scalerFileName):
-            self.scaler = self._set_scaler_from_file(self.scalerFileName)        
+            self.scaler = joblib.load(self.scalerFileName)      
             print("Load scaler File")
         else:
             scaler = self._get_BasicScaler(self.scaling_method) 
@@ -125,12 +131,12 @@ class DataScaler():
         self.scaledData= pd.DataFrame(scaledData, index =self.dataToBeScaled.index, columns =self.dataToBeScaled.columns)
         return self.scaledData
         
-    def save_scaler(self, scaler_file_name, scaler):
+    def save_scaler(self, scalerFileName, scaler):
         import os
-        dir_name = os.path.dirname(scaler_file_name)
+        dir_name = os.path.dirname(scalerFileName)
         if not os.path.exists(dir_name):
             os.makedirs(dir_name)
-        joblib.dump(scaler, scaler_file_name)
+        joblib.dump(scaler, scalerFileName)
 
 
     def _get_scalable_columns(self, data):
@@ -150,11 +156,6 @@ class DataScaler():
         }
         return scalers.get(scaler.lower())()
 
-
-        
-    def _set_scaler_from_file(self, scaler_file_name):
-        self.scaler = joblib.load(scaler_file_name)
-        return self.scaler
     
 class DataInverseScaler():
     def __init__(self, data, scaling_method):
