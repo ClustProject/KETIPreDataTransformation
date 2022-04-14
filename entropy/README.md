@@ -49,6 +49,9 @@
 ## 3. Usage
 
 ### `Main.py` 
+
+
+
 - **Output Data Formats**
 	```python
 	mcrde_chf     = np.zeros((n_s, scale))
