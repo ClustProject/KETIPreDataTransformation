@@ -34,7 +34,7 @@ class DataScaler():
         :type rootPath: String (result of os.path.join('directory1','directory2'....))
         """
         self.scaling_method = scaling_method #
-        self.scale_columns = self._get_scalable_columns(data)
+        self.scale_columns = get_scalable_columns(data)
         self.data = data
         self._setSalerInfo(rootPath)
 
@@ -137,14 +137,6 @@ class DataScaler():
         if not os.path.exists(dir_name):
             os.makedirs(dir_name)
         joblib.dump(scaler, scalerFileName)
-
-
-    def _get_scalable_columns(self, data):
-        integer_columns = list(data.select_dtypes(include=['int64', 'int32']).columns)
-        float_columns = list(data.select_dtypes(include=['float64', 'float32']).columns)
-        object_columns = list(data.select_dtypes(include=['object']).columns)
-        scale_columns = integer_columns + float_columns
-        return scale_columns
         
     def _get_BasicScaler(self, scaler):
         from sklearn.preprocessing import MinMaxScaler, StandardScaler, MaxAbsScaler, RobustScaler
@@ -156,6 +148,12 @@ class DataScaler():
         }
         return scalers.get(scaler.lower())()
 
+def get_scalable_columns(data):
+    integer_columns = list(data.select_dtypes(include=['int64', 'int32']).columns)
+    float_columns = list(data.select_dtypes(include=['float64', 'float32']).columns)
+    object_columns = list(data.select_dtypes(include=['object']).columns)
+    scale_columns = integer_columns + float_columns
+    return scale_columns
     
 class DataInverseScaler():
     def __init__(self, data, scaling_method):

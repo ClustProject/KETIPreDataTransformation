@@ -1,3 +1,7 @@
+import sys
+sys.path.append("../")
+sys.path.append("../..")
+from KETIPreDataTransformation.general_transformation import dataScaler
 from sklearn.preprocessing import RobustScaler
 import pandas as pd
 import numpy as np
@@ -7,7 +11,7 @@ import joblib
 class DataFrameScaling():
     def __init__(self, data, scaling_method):
         self.scaling_method = scaling_method
-        self.scale_columns = self.get_scalable_columns(data)
+        self.scale_columns = dataScaler.get_scalable_columns(data)
         self.data = data
 
     #scaler Manipulation
@@ -60,12 +64,7 @@ class DataFrameScaling():
         output[self.scale_columns] = np.log(output[self.scale_columns]+1)
         return output
     
-    def get_scalable_columns(self, data):
-        integer_columns = list(data.select_dtypes(include=['int64', 'int32']).columns)
-        float_columns = list(data.select_dtypes(include=['float64', 'float32']).columns)
-        object_columns = list(data.select_dtypes(include=['object']).columns)
-        scale_columns = integer_columns + float_columns
-        return scale_columns
+
 
 class DataInverseScaling(): 
     def __init__(self,scaling_method, target_column, scaler ,scale_columns):
