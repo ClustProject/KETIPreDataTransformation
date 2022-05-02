@@ -1,62 +1,77 @@
-def splitDataByRatio(data, splitRatio):
-    train_length=int(len(data)*splitRatio)
-    train, test = data[:train_length], data[train_length:]
-    return train, test
+from torch.utils.data import TensorDataset, DataLoader
+import torch
+class LSTMData():
+    def __init__(self):
+        pass
+    
+    def getTorchLoader(self, X_arr, y_arr, batch_size):
+        features = torch.Tensor(X_arr)
+        targets = torch.Tensor(y_arr)
+        data = TensorDataset(features, targets)
+        loader = DataLoader(data, batch_size=batch_size, shuffle=False, drop_last=True)
+        print("features shape:", features.shape, "targets shape: ", targets.shape)
+        return loader
 
-def splitXy(data, X_col, y_col):
-    X = data[X_col]
-    y = data[y_col]
-    return X, y
 
-def adaptXyByTargetInfo(X, y, future_num, method='step'):
-    data_X= X[:len(X)- future_num]
-    if method=='step':
-        if future_num ==0:
-            data_y = y
-        else:
-            data_y = y[future_num:]
-    """
-    #  method == mean
-    # if future_num is N, data_y(n) is Mean(y(n)~y(n+(N-1))
-    else: 
-        for i in range(self.future_num):
-            j = i
-            y[self.target_feature+'+'+str(j)] = y[self.target_feature].shift(-j)
-        y = y.drop(self.target_feature, axis=1)[:len(data)-self.future_num]
-        if method=='mean':
-            y = y.mean(axis=1)   
-        elif method=='max':
-            y = y.max(axis=1)
-        elif method=='min':
-            y = y.min(axis=1)
-        else: 
-            y = y.mean(axis=1) 
-        data_y[self.target_feature+'_CurrentAndFuture_'+method+''+str(self.future_num)] = y
-        # Modify the code below to adaptively change the shape of y depending on the situation 
-        # by making more specific rules in the future
-    """
-    return data_X, data_y
+    def splitDataByRatio(self, data, splitRatio):
+        """
+        Split Data By Ratio. It usually makes train/validation data and train/test data
+        """
+        length1=int(len(data)*splitRatio)
+        data1, data2 = data[:length1], data[length1:]
+        return data1, data2
 
-def getCleanXy(X, y, past_step):
-        Clean_X, Clean_y = list(), list()
-        Nan_num=0
-        
-        # Remove set having any nan data
-        for i in range(len(X)- past_step):
-            seq_x = X[i:i+past_step].values
-            seq_y = y.iloc[[i+past_step-1]].values
-            if np.isnan(seq_x).any() | np.isnan(seq_y).any():
-                Nan_num=Nan_num+1
+    def transformXyArr(self, data, transformParameter):
+        feature_col= transformParameter["feature_col"]
+        target_col= transformParameter["target_col"]
+        future_step= transformParameter["future_step"]
+        past_step= transformParameter["past_step"]
+
+        self.dataX, self.datay = self._splitXy(data, feature_col, target_col)
+        dataX_, datay_ = self._adaptXyByTargetInfo(self.dataX, self.datay, future_step )
+        self.dataX_arr, self.datay_arr  = self._getCleanXy(dataX_, datay_, past_step)
+        return self.dataX_arr, self.datay_arr
+
+    def _splitXy(self, data, X_col, y_col):
+        X = data[X_col]
+        y = data[y_col]
+        return X, y
+
+    def _adaptXyByTargetInfo(self, X, y, future_num, method='step'):
+        data_X= X[:len(X)- future_num]
+        if method=='step':
+            if future_num ==0:
+                data_y = y
             else:
-                Clean_X.append(seq_x)
-                Clean_y.append(seq_y)
-        print("Removed Data Length:", Nan_num)
-        Clean_X = array(Clean_X)
-        Clean_y = array(Clean_y).reshape(-1, len(y.columns))
-        #Clean_y = array(Clean_y)
+                data_y = y[future_num:]
 
-        return Clean_X, Clean_y
+        return data_X, data_y
 
+    def _getCleanXy(self, X, y, past_step):
+            Clean_X, Clean_y = list(), list()
+            Nan_num=0
+            
+            # Remove set having any nan data
+            for i in range(len(X)- past_step):
+                seq_x = X[i:i+past_step].values
+                seq_y = y.iloc[[i+past_step-1]].values
+                if np.isnan(seq_x).any() | np.isnan(seq_y).any():
+                    Nan_num=Nan_num+1
+                else:
+                    Clean_X.append(seq_x)
+                    Clean_y.append(seq_y)
+            print("Removed Data Length:", Nan_num)
+            Clean_X = array(Clean_X)
+            Clean_y = array(Clean_y).reshape(-1, len(y.columns))
+            #Clean_y = array(Clean_y)
+
+            return Clean_X, Clean_y
+
+    
+"""
+아래 코드 쓰이는가?
+
+"""
 import pandas as pd
 import numpy as np
 from numpy import array

@@ -21,7 +21,7 @@ class DataScaler():
         -------
         >>> from KETIPreDataTransformation.general_transformation.dataScaler import DataScaler
         >>> DS = DataScaler(df_features, 'minmax')
-        >>> DS.setScaleColumns(scaleColumns) # can skip
+        >>> DS.setScaleColumns(scaleColumns) # it can be skipped
         >>> scalerRootpath = os.path.join('/Users','jw_macmini','CLUSTGit','KETIAppMachineLearning','scaler')
         >>> scaler = DS.setScaler(scalerRootpath)
         >>> result = DS.transform()
@@ -29,7 +29,9 @@ class DataScaler():
         :param data: input data to be scaled
         :type data: dataFrame
         :param scaling_method: scaling method 
-        :type scaling_method: string (one of ['minmax','standard','maxabs','robust'])
+
+        :type scaling_method: string (one of ['minmax','standard','maxabs','robust'])'
+
         :param rootPath: Root path where the scaler will be stored 
         :type rootPath: String (result of os.path.join('directory1','directory2'....))
         """
@@ -37,6 +39,7 @@ class DataScaler():
         self.scale_columns = get_scalable_columns(data)
         self.data = data
         self._setSalerInfo(rootPath)
+        self.scaler = self._setScaler()
 
     def _setSalerInfo(self, rootPath):
         """
@@ -50,7 +53,7 @@ class DataScaler():
         encoded_scaler_list = self.encodeHashStyle(self.scale_columns)
         scaler_list[encoded_scaler_list] = self.scale_columns
         self.writeJson(self.scalerListJsonFilePath, scaler_list)
-        self.scalerFileName = os.path.join(rootPath, self.scaling_method, encoded_scaler_list, "scaler.pkl")
+        self.scalerFilePath = os.path.join(rootPath, self.scaling_method, encoded_scaler_list, "scaler.pkl")
 
     def setScaleColumns(self, scaleColumns):
         """
@@ -68,9 +71,10 @@ class DataScaler():
         >>> DS.setScaleColumns(scaleColumns) # can skip
         """
         self.scale_columns = scaleColumns
+        
         #scaler Manipulation
 
-    def setScaler(self):
+    def _setScaler(self):
         """
         The function set scaler. (generation or load based on root_path info, scale columns)
         
@@ -78,16 +82,16 @@ class DataScaler():
             scaler
         """
         self.dataToBeScaled = self.data[self.scale_columns]
-        if os.path.isfile(self.scalerFileName):
-            self.scaler = joblib.load(self.scalerFileName)      
+        if os.path.isfile(self.scalerFilePath):
+            scaler = joblib.load(self.scalerFilePath)      
             print("Load scaler File")
         else:
             scaler = self._get_BasicScaler(self.scaling_method) 
-            self.scaler = scaler.fit(self.dataToBeScaled)
-            self.save_scaler(self.scalerFileName, self.scaler)
+            scaler = scaler.fit(self.dataToBeScaled)
+            self.save_scaler(self.scalerFilePath, scaler)
             print("Make New scaler File")
 
-        return self.scaler
+        return scaler
 
     def readJson(self, jsonFilePath):
         """
@@ -100,7 +104,7 @@ class DataScaler():
         >>> DS = DataScaler(df_features, 'minmax',scalerRootpath )
         >>> scaler = DS.setScaler()
         >>> df_features = DS.transform()
-        >>> y = os.path.split(os.path.dirname(DS.scalerFileName))
+        >>> y = os.path.split(os.path.dirname(DS.scalerFilePath))
         >>> scalerList = DS.readJson(DS.scalerListJsonFilePath)
         >>> scalerList[y[-1]] # print column list of scaler
 
@@ -131,12 +135,12 @@ class DataScaler():
         self.scaledData= pd.DataFrame(scaledData, index =self.dataToBeScaled.index, columns =self.dataToBeScaled.columns)
         return self.scaledData
         
-    def save_scaler(self, scalerFileName, scaler):
+    def save_scaler(self, scalerFilePath, scaler):
         import os
-        dir_name = os.path.dirname(scalerFileName)
+        dir_name = os.path.dirname(scalerFilePath)
         if not os.path.exists(dir_name):
             os.makedirs(dir_name)
-        joblib.dump(scaler, scalerFileName)
+        joblib.dump(scaler, scalerFilePath)
         
     def _get_BasicScaler(self, scaler):
         from sklearn.preprocessing import MinMaxScaler, StandardScaler, MaxAbsScaler, RobustScaler
