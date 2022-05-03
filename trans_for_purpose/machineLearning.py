@@ -7,10 +7,10 @@ class LSTMData():
     def getTorchLoader(self, X_arr, y_arr, batch_size):
         features = torch.Tensor(X_arr)
         targets = torch.Tensor(y_arr)
-        data = TensorDataset(features, targets)
-        loader = DataLoader(data, batch_size=batch_size, shuffle=False, drop_last=True)
+        dataSet = TensorDataset(features, targets)
+        loader = DataLoader(dataSet, batch_size=batch_size, shuffle=False, drop_last=True)
         print("features shape:", features.shape, "targets shape: ", targets.shape)
-        return loader
+        return dataSet, loader
 
 
     def splitDataByRatio(self, data, splitRatio):
