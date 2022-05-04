@@ -20,10 +20,9 @@ class DataScaler():
         Example
         -------
         >>> from KETIPreDataTransformation.general_transformation.dataScaler import DataScaler
-        >>> DS = DataScaler(df_features, 'minmax')
-        >>> DS.setScaleColumns(scaleColumns) # it can be skipped
         >>> scalerRootpath = os.path.join('/Users','jw_macmini','CLUSTGit','KETIAppMachineLearning','scaler')
-        >>> scaler = DS.setScaler(scalerRootpath)
+        >>> DS = DataScaler(df_features, 'minmax',scalerRootpath )
+        >>> DS.setScaleColumns(scaleColumns) # it can be skipped
         >>> result = DS.transform()
 
         :param data: input data to be scaled
@@ -38,10 +37,10 @@ class DataScaler():
         self.scaling_method = scaling_method #
         self.scale_columns = get_scalable_columns(data)
         self.data = data
-        self._setSalerInfo(rootPath)
+        self._setScalerInfo(rootPath)
         self.scaler = self._setScaler()
 
-    def _setSalerInfo(self, rootPath):
+    def _setScalerInfo(self, rootPath):
         """
         This function set scalerListJsonFilePath and update it. and describes detail information in [rootpath]/scaler_list.json
         :param rootPath: Root path where the scaler will be stored 
@@ -160,8 +159,74 @@ def get_scalable_columns(data):
     return scale_columns
     
 class DataInverseScaler():
-    def __init__(self, data, scaling_method):
+    def __init__(self, data, scaling_method, rootPath):
         """
-        This class load scaler and make inverse scaling.
+        This class makes inverse scaled data.
+
+        Example
+        -------
+        >>> from KETIPreDataTransformation.general_transformation.dataScaler import DataScaler
+        >>> scalerRootpath = os.path.join('/Users','jw_macmini','CLUSTGit','KETIAppMachineLearning','scaler')
+        >>> DIS = DataInverseScaler(df_features, 'minmax',scalerRootpath )
+        >>> #DIS.setScaleColumns(scaleColumns) # it can be skipped
+        >>> result = DIS.transform()
+
+        :param data: input data to be inverse-scaled
+        :type data: dataFrame
+
+        :param scaling_method: scaling method 
+        :type scaling_method: string (one of ['minmax','standard','maxabs','robust'])'
+
+        :param rootPath: Root path where the scaler will be stored 
+        :type rootPath: String (result of os.path.join('directory1','directory2'....))
         """
-        pass
+        self.scaling_method = scaling_method #
+        self.scale_columns = get_scalable_columns(data)
+        self.data = data
+        self._getScalerFilePath(rootPath)
+        self.scaler = self._setScaler()
+
+    def encodeHashStyle(self, text):
+        import hashlib
+        hash_object = hashlib.md5(str(text).encode('utf-8'))
+        hashedText= hash_object.hexdigest()
+        return hashedText
+
+    def _getScalerFilePath(self, rootPath):
+        """
+        This function set scaler file path name
+        :param rootPath: Root path where the scaler will be stored 
+        :type rootPath: String (result of os.path.join('directory1','directory2'....))
+
+        """
+        
+        encoded_scaler_list = self.encodeHashStyle(self.scale_columns)
+        self.scalerFilePath = os.path.join(rootPath, self.scaling_method, encoded_scaler_list, "scaler.pkl")
+        print(self.scalerFilePath)
+
+    def _setScaler(self):
+        """
+        The function set scaler. (generation or load based on root_path info, scale columns)
+        
+        Returns: scaler
+            scaler
+        """
+        self.dataToBeScaled = self.data[self.scale_columns]
+        if os.path.isfile(self.scalerFilePath):
+            scaler = joblib.load(self.scalerFilePath)      
+            print("Load scaler File")
+        else:
+            print("No proper scaler")
+            scaler=None
+
+        return scaler
+    
+    def transform(self):
+        """
+        The function transform data by inverse-scaler
+        Returns: pd.DataFarme
+            transformed Data
+        """
+        inverseScaledData = self.scaler.inverse_transform(self.dataToBeScaled)
+        self.inverseScaledData= pd.DataFrame(inverseScaledData, index =self.dataToBeScaled.index, columns =self.dataToBeScaled.columns) 
+        return self.inverseScaledData
