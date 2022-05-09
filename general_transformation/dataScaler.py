@@ -7,7 +7,7 @@ import json
 # 2022 New Code
 
 class DataScaler():
-    def __init__(self, data, scaling_method, rootPath):
+    def __init__(self, scaling_method, rootPath):
         """
         This class generates a scaler and transforms the data. 
         All information should be described in [rootPath]/scaler_list.json. Before use this class, you can make the empty json file (only describing {})
@@ -19,40 +19,39 @@ class DataScaler():
 
         Example
         -------
-        >>> from KETIPreDataTransformation.general_transformation.dataScaler import DataScaler
-        >>> scalerRootpath = os.path.join('/Users','jw_macmini','CLUSTGit','KETIAppMachineLearning','scaler')
-        >>> DS = DataScaler(df_features, 'minmax',scalerRootpath )
-        >>> DS.setScaleColumns(scaleColumns) # it can be skipped
-        >>> result = DS.transform()
+        >>> from KETIPreDataTransformation.general_transformation.dataScaler import DataScaler, DataInverseScaler
+        >>> from KETIPreDataTransformation.general_transformation import dataScaler
+        >>> DS = DataScaler('minmax', scalerRootpath )
+        >>> #feature_col_list = dataScaler.get_scalable_columns(train_o)
+        >>> DS.setScaleColumns(feature_col_list)
+        >>> DS.setScaler(trainval_o, True)
+        >>> train = DS.transform(train_o)
+        >>> val = DS.transform(val_o)
 
-        :param data: input data to be scaled
-        :type data: dataFrame
         :param scaling_method: scaling method 
-
         :type scaling_method: string (one of ['minmax','standard','maxabs','robust'])'
 
         :param rootPath: Root path where the scaler will be stored 
         :type rootPath: String (result of os.path.join('directory1','directory2'....))
         """
         self.scaling_method = scaling_method #
-        self.scale_columns = get_scalable_columns(data)
-        self.data = data
-        self._setScalerInfo(rootPath)
-        self.scaler = self._setScaler()
+        #self.scale_columns = get_scalable_columns(data)
+        self.rootPath = rootPath
+        
 
-    def _setScalerInfo(self, rootPath):
+    def _setScalerInfo(self):
         """
         This function set scalerListJsonFilePath and update it. and describes detail information in [rootpath]/scaler_list.json
         :param rootPath: Root path where the scaler will be stored 
         :type rootPath: String (result of os.path.join('directory1','directory2'....))
 
         """
-        self.scalerListJsonFilePath = os.path.join(rootPath, "scaler_list.json")
+        self.scalerListJsonFilePath = os.path.join(self.rootPath, "scaler_list.json")
         scaler_list = self.readJson(self.scalerListJsonFilePath)
         encoded_scaler_list = self.encodeHashStyle(self.scale_columns)
         scaler_list[encoded_scaler_list] = self.scale_columns
         self.writeJson(self.scalerListJsonFilePath, scaler_list)
-        self.scalerFilePath = os.path.join(rootPath, self.scaling_method, encoded_scaler_list, "scaler.pkl")
+        self.scalerFilePath = os.path.join(self.rootPath, self.scaling_method, encoded_scaler_list, "scaler.pkl")
 
     def setScaleColumns(self, scaleColumns):
         """
@@ -64,33 +63,11 @@ class DataScaler():
 
         Example
         -------
-        >>> from KETIPreDataTransformation.general_transformation.dataScaler import DataScaler
-        >>> DS = DataScaler(df_features, 'minmax')
         >>> scaleColumns=['a','b']
         >>> DS.setScaleColumns(scaleColumns) # can skip
         """
         self.scale_columns = scaleColumns
-        
-        #scaler Manipulation
 
-    def _setScaler(self):
-        """
-        The function set scaler. (generation or load based on root_path info, scale columns)
-        
-        Returns: scaler
-            scaler
-        """
-        self.dataToBeScaled = self.data[self.scale_columns]
-        if os.path.isfile(self.scalerFilePath):
-            scaler = joblib.load(self.scalerFilePath)      
-            print("Load scaler File")
-        else:
-            scaler = self._get_BasicScaler(self.scaling_method) 
-            scaler = scaler.fit(self.dataToBeScaled)
-            self.save_scaler(self.scalerFilePath, scaler)
-            print("Make New scaler File")
-
-        return scaler
 
     def readJson(self, jsonFilePath):
         """
@@ -100,9 +77,9 @@ class DataScaler():
         -------
         >>> from KETIPreDataTransformation.general_transformation.dataScaler import DataScaler
         >>> scalerRootpath = os.path.join('/Users','scaler')
-        >>> DS = DataScaler(df_features, 'minmax',scalerRootpath )
+        >>> DS = DataScaler('minmax',scalerRootpath )
         >>> scaler = DS.setScaler()
-        >>> df_features = DS.transform()
+        >>> df_features = DS.transform(data)
         >>> y = os.path.split(os.path.dirname(DS.scalerFilePath))
         >>> scalerList = DS.readJson(DS.scalerListJsonFilePath)
         >>> scalerList[y[-1]] # print column list of scaler
@@ -124,15 +101,46 @@ class DataScaler():
         hashedText= hash_object.hexdigest()
         return hashedText
 
-    def transform(self):
+    def transform(self, data):
         """
         The function transform data by scaler
+
+        :param data: input data to be scaled
+        :type data: dataFrame
+
         Returns: pd.DataFarme
             transformed Data
         """
-        scaledData = self.scaler.transform(self.dataToBeScaled)
-        self.scaledData= pd.DataFrame(scaledData, index =self.dataToBeScaled.index, columns =self.dataToBeScaled.columns)
+        self.data = data
+        dataTobeScaled = self.data[self.scale_columns]
+        scaledData = self.scaler.transform(dataTobeScaled)
+        self.scaledData= pd.DataFrame(scaledData, index =dataTobeScaled.index, columns =dataTobeScaled.columns)
         return self.scaledData
+
+    def setScaler(self, dataForScaler, newScaler=False):
+        """
+        The function sets scaler. (generation or load based on root_path info, scale columns)
+        
+        Returns: scaler
+            scaler
+        """
+        self._setScalerInfo()
+        dataForScaler = dataForScaler[self.scale_columns]
+
+        if newScaler == False:
+            if os.path.isfile(self.scalerFilePath):
+                self.scaler = joblib.load(self.scalerFilePath)      
+                print("Load scaler File")
+            else:
+                print("No Scaler")
+                self.scaler= None
+        else:
+            scaler = self._get_BasicScaler(self.scaling_method) 
+            self.scaler = scaler.fit(dataForScaler)
+            self.save_scaler(self.scalerFilePath, scaler)
+            print("Make New scaler File")
+
+        return self.scaler
         
     def save_scaler(self, scalerFilePath, scaler):
         import os
@@ -159,7 +167,7 @@ def get_scalable_columns(data):
     return scale_columns
     
 class DataInverseScaler():
-    def __init__(self, data, scaling_method, rootPath):
+    def __init__(self, scaling_method, column_list, rootPath):
         """
         This class makes inverse scaled data.
 
@@ -171,62 +179,56 @@ class DataInverseScaler():
         >>> #DIS.setScaleColumns(scaleColumns) # it can be skipped
         >>> result = DIS.transform()
 
-        :param data: input data to be inverse-scaled
-        :type data: dataFrame
-
         :param scaling_method: scaling method 
         :type scaling_method: string (one of ['minmax','standard','maxabs','robust'])'
 
         :param rootPath: Root path where the scaler will be stored 
         :type rootPath: String (result of os.path.join('directory1','directory2'....))
         """
+        self.scale_columns = column_list
         self.scaling_method = scaling_method #
-        self.scale_columns = get_scalable_columns(data)
-        self.data = data
-        self._getScalerFilePath(rootPath)
-        self.scaler = self._setScaler()
-
+        encoded_scaler_list = self.encodeHashStyle(column_list)
+        self.scalerFilePath = os.path.join(rootPath, self.scaling_method, encoded_scaler_list, "scaler.pkl")
+        print(self.scalerFilePath)
+        
     def encodeHashStyle(self, text):
         import hashlib
         hash_object = hashlib.md5(str(text).encode('utf-8'))
         hashedText= hash_object.hexdigest()
         return hashedText
 
-    def _getScalerFilePath(self, rootPath):
-        """
-        This function set scaler file path name
-        :param rootPath: Root path where the scaler will be stored 
-        :type rootPath: String (result of os.path.join('directory1','directory2'....))
-
-        """
-        
-        encoded_scaler_list = self.encodeHashStyle(self.scale_columns)
-        self.scalerFilePath = os.path.join(rootPath, self.scaling_method, encoded_scaler_list, "scaler.pkl")
-        print(self.scalerFilePath)
-
     def _setScaler(self):
         """
         The function set scaler. (generation or load based on root_path info, scale columns)
         
+        :param data: input data to be inverse-scaled
+        :type data: dataFrame
+
         Returns: scaler
             scaler
         """
-        self.dataToBeScaled = self.data[self.scale_columns]
         if os.path.isfile(self.scalerFilePath):
-            scaler = joblib.load(self.scalerFilePath)      
+            self.scaler = joblib.load(self.scalerFilePath)      
             print("Load scaler File")
         else:
             print("No proper scaler")
-            scaler=None
+            self.scaler=None
 
-        return scaler
+        return self.scaler
     
-    def transform(self):
+    def transform(self, data):
         """
         The function transform data by inverse-scaler
+
+        :param data: input data to be inverse-scaled
+        :type data: dataFrame
+
         Returns: pd.DataFarme
             transformed Data
         """
+        self.data = data
+        self.dataToBeScaled = self.data[self.scale_columns]
+        self.scaler = self._setScaler()
         inverseScaledData = self.scaler.inverse_transform(self.dataToBeScaled)
         self.inverseScaledData= pd.DataFrame(inverseScaledData, index =self.dataToBeScaled.index, columns =self.dataToBeScaled.columns) 
         return self.inverseScaledData

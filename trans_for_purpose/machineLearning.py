@@ -34,25 +34,24 @@ class LSTMData():
 
     def _splitXy(self, data, X_col, y_col):
         X = data[X_col]
-        y = data[y_col]
+        y = data[[y_col]]
         return X, y
 
     def _adaptXyByTargetInfo(self, X, y, future_num, method='step'):
-        data_X= X[:len(X)- future_num]
+        data_X= X[:-future_num]
         if method=='step':
             if future_num ==0:
                 data_y = y
             else:
                 data_y = y[future_num:]
-
         return data_X, data_y
 
     def _getCleanXy(self, X, y, past_step):
             Clean_X, Clean_y = list(), list()
             Nan_num=0
-            
+            print("Original Lenagh:", len(X))
             # Remove set having any nan data
-            for i in range(len(X)- past_step):
+            for i in range(len(X)- past_step+1):
                 seq_x = X[i:i+past_step].values
                 seq_y = y.iloc[[i+past_step-1]].values
                 if np.isnan(seq_x).any() | np.isnan(seq_y).any():
@@ -64,7 +63,7 @@ class LSTMData():
             Clean_X = array(Clean_X)
             Clean_y = array(Clean_y).reshape(-1, len(y.columns))
             #Clean_y = array(Clean_y)
-
+            print("Clean Leangth:", len(Clean_X))
             return Clean_X, Clean_y
 
     
