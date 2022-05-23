@@ -21,15 +21,18 @@ class LSTMData():
         data1, data2 = data[:length1], data[length1:]
         return data1, data2
 
-    def transformXyArr(self, data, transformParameter):
+    def transformXyArr(self, data, transformParameter, CleanParam=True):
         feature_col= transformParameter["feature_col"]
         target_col= transformParameter["target_col"]
         future_step= transformParameter["future_step"]
         past_step= transformParameter["past_step"]
-
+        if CleanParam==True:
+            pass
+        else:
+            data = data.interpolate(method='linear').dropna()
         self.dataX, self.datay = self._splitXy(data, feature_col, target_col)
         dataX_, datay_ = self._adaptXyByTargetInfo(self.dataX, self.datay, future_step )
-        self.dataX_arr, self.datay_arr  = self._getCleanXy(dataX_, datay_, past_step)
+        self.dataX_arr, self.datay_arr  = self._getCleanXy(dataX_, datay_, past_step, CleanParam)
         return self.dataX_arr, self.datay_arr
 
     def _splitXy(self, data, X_col, y_col):
@@ -46,7 +49,12 @@ class LSTMData():
                 data_y = y[future_num:]
         return data_X, data_y
 
-    def _getCleanXy(self, X, y, past_step):
+    
+    def _getCleanXy(self, X, y, past_step, CleanParam):
+            """
+            If clean param is True -> get only data without NaN
+            Clean Param is False -> get all data after linear interpolation
+            """
             Clean_X, Clean_y = list(), list()
             Nan_num=0
             print("Original Lenagh:", len(X))
@@ -54,8 +62,12 @@ class LSTMData():
             for i in range(len(X)- past_step+1):
                 seq_x = X[i:i+past_step].values
                 seq_y = y.iloc[[i+past_step-1]].values
-                if np.isnan(seq_x).any() | np.isnan(seq_y).any():
-                    Nan_num=Nan_num+1
+                if CleanParam == True:
+                    if np.isnan(seq_x).any() | np.isnan(seq_y).any():
+                        Nan_num=Nan_num+1
+                    else:
+                        Clean_X.append(seq_x)
+                        Clean_y.append(seq_y)
                 else:
                     Clean_X.append(seq_x)
                     Clean_y.append(seq_y)
