@@ -57,7 +57,7 @@ class LSTMData():
             """
             Clean_X, Clean_y = list(), list()
             Nan_num=0
-            print("Original Lenagh:", len(X))
+            print("1. Original Data Lenagh:", len(X))
             # Remove set having any nan data
             for i in range(len(X)- past_step+1):
                 seq_x = X[i:i+past_step].values
@@ -71,11 +71,11 @@ class LSTMData():
                 else:
                     Clean_X.append(seq_x)
                     Clean_y.append(seq_y)
-            print("Removed Data Length:", Nan_num)
+            print("2. Removed Data Length:", Nan_num)
             Clean_X = array(Clean_X)
             Clean_y = array(Clean_y).reshape(-1, len(y.columns))
             #Clean_y = array(Clean_y)
-            print("Clean Leangth:", len(Clean_X))
+            print("3. Clean Data Leangth:", len(Clean_X))
             return Clean_X, Clean_y
 
     
