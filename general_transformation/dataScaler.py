@@ -24,7 +24,7 @@ class DataScaler():
         >>> DS = DataScaler('minmax', scalerRootpath )
         >>> #feature_col_list = dataScaler.get_scalable_columns(train_o)
         >>> DS.setScaleColumns(feature_col_list)
-        >>> DS.setScaler(trainval_o, True)
+        >>> DS.setNewScaler(trainval_o, True)
         >>> train = DS.transform(train_o)
         >>> val = DS.transform(val_o)
 
@@ -37,6 +37,7 @@ class DataScaler():
         self.scaling_method = scaling_method #
         #self.scale_columns = get_scalable_columns(data)
         self.rootPath = rootPath
+        self.scalerListJsonFilePath = os.path.join(self.rootPath, "scaler_list.json")
         
 
     def _setScalerInfo(self):
@@ -44,12 +45,12 @@ class DataScaler():
         This function set scalerListJsonFilePath and update it. and describes detail information in [rootpath]/scaler_list.json
         :param rootPath: Root path where the scaler will be stored 
         :type rootPath: String (result of os.path.join('directory1','directory2'....))
-
         """
-        self.scalerListJsonFilePath = os.path.join(self.rootPath, "scaler_list.json")
+
         scaler_list = self.readJson(self.scalerListJsonFilePath)
         encoded_scaler_list = self.encodeHashStyle(self.scale_columns)
         scaler_list[encoded_scaler_list] = self.scale_columns
+        print(self.scale_columns)
         self.writeJson(self.scalerListJsonFilePath, scaler_list)
         self.scalerFilePath = os.path.join(self.rootPath, self.scaling_method, encoded_scaler_list, "scaler.pkl")
 
@@ -78,7 +79,7 @@ class DataScaler():
         >>> from KETIPreDataTransformation.general_transformation.dataScaler import DataScaler
         >>> scalerRootpath = os.path.join('/Users','scaler')
         >>> DS = DataScaler('minmax',scalerRootpath )
-        >>> scaler = DS.setScaler()
+        >>> scaler = DS.setNewScaler()
         >>> df_features = DS.transform(data)
         >>> y = os.path.split(os.path.dirname(DS.scalerFilePath))
         >>> scalerList = DS.readJson(DS.scalerListJsonFilePath)
@@ -117,7 +118,18 @@ class DataScaler():
         self.scaledData= pd.DataFrame(scaledData, index =dataTobeScaled.index, columns =dataTobeScaled.columns)
         return self.scaledData
 
-    def setScaler(self, dataForScaler, newScaler=False):
+    def setNewScaler(self, dataForScaler):
+        self._setScalerInfo()
+        dataForScaler = dataForScaler[self.scale_columns]
+
+        scaler = self._get_BasicScaler(self.scaling_method) 
+        self.scaler = scaler.fit(dataForScaler)
+        self.save_scaler(self.scalerFilePath, scaler)
+        print("Make New scaler File")
+        return self.scaler
+
+    def getScaler(self):
+        
         """
         The function sets scaler. (generation or load based on root_path info, scale columns)
         
@@ -125,20 +137,13 @@ class DataScaler():
             scaler
         """
         self._setScalerInfo()
-        dataForScaler = dataForScaler[self.scale_columns]
-
-        if newScaler == False:
-            if os.path.isfile(self.scalerFilePath):
-                self.scaler = joblib.load(self.scalerFilePath)      
-                print("Load scaler File")
-            else:
-                print("No Scaler")
-                self.scaler= None
+        if os.path.isfile(self.scalerFilePath):
+            self.scaler = joblib.load(self.scalerFilePath)      
+            print("Load scaler File")
         else:
-            scaler = self._get_BasicScaler(self.scaling_method) 
-            self.scaler = scaler.fit(dataForScaler)
-            self.save_scaler(self.scalerFilePath, scaler)
-            print("Make New scaler File")
+            print("No Scaler")
+            self.scaler= None
+
 
         return self.scaler
         
