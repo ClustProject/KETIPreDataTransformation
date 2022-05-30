@@ -10,23 +10,36 @@ class DataScaler():
     def __init__(self, scaling_method, rootPath):
         """
         This class generates a scaler and transforms the data. 
-        All information should be described in [rootPath]/scaler_list.json. Before use this class, you can make the empty json file (only describing {})
+        - All information should be described in [rootPath]/scaler_list.json. Before use this class, you can make the empty json file.
+        - Initially, only {} should be written in the json file.
+        --- setNewScaler(data) function: it makes a new Scaler, even if there is previous scaler. And
         Checks whether the scaler file is already saved, and if it exists, it is loaded and used. 
         If it does not exist, a new scaler is created based on the input data and saved .
 
         The scaler can be set to scale only a limited columns. (use self.setScaleColumns)
         Unless otherwise specified, scalers are created for scalable numeric data.
 
-        Example
+        
+        Example 1 (make new scaler and scale data )
         -------
-        >>> from KETIPreDataTransformation.general_transformation.dataScaler import DataScaler, DataInverseScaler
-        >>> from KETIPreDataTransformation.general_transformation import dataScaler
+        >>> from KETIPreDataTransformation.general_transformation.dataScaler import DataScaler
+        >>> scalerRootpath = = os.path.join('/home','keti','CLUST_KETI','Clust','KETIAppTestCode','scaler','VIBES')
         >>> DS = DataScaler('minmax', scalerRootpath )
         >>> #feature_col_list = dataScaler.get_scalable_columns(train_o)
+        >>> feature_col_list= ['CO/value', 'H2S/value', 'NH3/value',  'O2/value', 'sin_hour']
         >>> DS.setScaleColumns(feature_col_list)
-        >>> DS.setNewScaler(trainval_o, True)
+        >>> DS.setNewScaler(trainval_o)
         >>> train = DS.transform(train_o)
-        >>> val = DS.transform(val_o)
+
+
+        Example 2 (load scaler and scale data)
+        >>> from KETIPreDataTransformation.general_transformation.dataScaler import DataScaler
+        >>> scalerRootpath = = os.path.join('/home','keti','CLUST_KETI','Clust','KETIAppTestCode','scaler','VIBES')
+        >>> DS = DataScaler('minmax', scalerRootpath )
+        >>> feature_col_list= ['CO/value', 'H2S/value', 'NH3/value',  'O2/value', 'sin_hour']
+        >>> DS.setScaleColumns(feature_col_list)
+        >>> DS.loadScaler()
+        >>> train = DS.transform(train_o)
 
         :param scaling_method: scaling method 
         :type scaling_method: string (one of ['minmax','standard','maxabs','robust'])'
@@ -43,16 +56,23 @@ class DataScaler():
     def _setScalerInfo(self):
         """
         This function set scalerListJsonFilePath and update it. and describes detail information in [rootpath]/scaler_list.json
+
         :param rootPath: Root path where the scaler will be stored 
         :type rootPath: String (result of os.path.join('directory1','directory2'....))
-        """
 
+        """
         scaler_list = self.readJson(self.scalerListJsonFilePath)
-        encoded_scaler_list = self.encodeHashStyle(self.scale_columns)
+        encoded_scaler_list = encodeHashStyle(self.scale_columns)
+        self.scalerFilePath = os.path.join(self.rootPath, self.scaling_method, encoded_scaler_list, "scaler.pkl")
+        return scaler_list, encoded_scaler_list
+
+    def _setNewScalerInfo(self):
+        scaler_list, encoded_scaler_list = self._setScalerInfo()
+
         scaler_list[encoded_scaler_list] = self.scale_columns
         print(self.scale_columns)
         self.writeJson(self.scalerListJsonFilePath, scaler_list)
-        self.scalerFilePath = os.path.join(self.rootPath, self.scaling_method, encoded_scaler_list, "scaler.pkl")
+        
 
     def setScaleColumns(self, scaleColumns):
         """
@@ -79,7 +99,7 @@ class DataScaler():
         >>> from KETIPreDataTransformation.general_transformation.dataScaler import DataScaler
         >>> scalerRootpath = os.path.join('/Users','scaler')
         >>> DS = DataScaler('minmax',scalerRootpath )
-        >>> scaler = DS.setNewScaler()
+        >>> scaler = DS.setNewScaler(trainval_o)
         >>> df_features = DS.transform(data)
         >>> y = os.path.split(os.path.dirname(DS.scalerFilePath))
         >>> scalerList = DS.readJson(DS.scalerListJsonFilePath)
@@ -95,12 +115,6 @@ class DataScaler():
     def writeJson(self, jsonFilePath, text):
         with open(jsonFilePath, 'w') as outfile:
             outfile.write(json.dumps(text))
-
-    def encodeHashStyle(self, text):
-        import hashlib
-        hash_object = hashlib.md5(str(text).encode('utf-8'))
-        hashedText= hash_object.hexdigest()
-        return hashedText
 
     def transform(self, data):
         """
@@ -119,7 +133,16 @@ class DataScaler():
         return self.scaledData
 
     def setNewScaler(self, dataForScaler):
-        self._setScalerInfo()
+        """
+        The function makes new scaler and saves it
+
+        :param dataForScaler: data to make a new scaler
+        :type dataForScaler: dataFrame
+
+        Returns: scaler
+            scaler
+        """
+        self._setNewScalerInfo()
         dataForScaler = dataForScaler[self.scale_columns]
 
         scaler = self._get_BasicScaler(self.scaling_method) 
@@ -128,10 +151,10 @@ class DataScaler():
         print("Make New scaler File")
         return self.scaler
 
-    def getScaler(self):
+    def loadScaler(self):
         
         """
-        The function sets scaler. (generation or load based on root_path info, scale columns)
+        The function loads scaler. 
         
         Returns: scaler
             scaler
@@ -172,7 +195,7 @@ def get_scalable_columns(data):
     return scale_columns
     
 class DataInverseScaler():
-    def __init__(self, scaling_method, column_list, rootPath):
+    def __init__(self, scaling_method, rootPath):
         """
         This class makes inverse scaled data.
 
@@ -181,7 +204,7 @@ class DataInverseScaler():
         >>> from KETIPreDataTransformation.general_transformation.dataScaler import DataScaler
         >>> scalerRootpath = os.path.join('/Users','jw_macmini','CLUSTGit','KETIAppMachineLearning','scaler')
         >>> DIS = DataInverseScaler(df_features, 'minmax',scalerRootpath )
-        >>> #DIS.setScaleColumns(scaleColumns) # it can be skipped
+        >>> DIS.setScaleColumns(df_features) 
         >>> result = DIS.transform()
 
         :param scaling_method: scaling method 
@@ -190,17 +213,22 @@ class DataInverseScaler():
         :param rootPath: Root path where the scaler will be stored 
         :type rootPath: String (result of os.path.join('directory1','directory2'....))
         """
-        self.scale_columns = column_list
         self.scaling_method = scaling_method #
-        encoded_scaler_list = self.encodeHashStyle(column_list)
-        self.scalerFilePath = os.path.join(rootPath, self.scaling_method, encoded_scaler_list, "scaler.pkl")
-        print(self.scalerFilePath)
+        self.rootPath = rootPath
         
-    def encodeHashStyle(self, text):
-        import hashlib
-        hash_object = hashlib.md5(str(text).encode('utf-8'))
-        hashedText= hash_object.hexdigest()
-        return hashedText
+    
+    def setScaleColumns(self, column_list):
+        """
+        Set scale columns and get scalerFilePath
+        :param column_list: 
+        :type column_list: list
+
+        """
+        
+        self.scale_columns = column_list
+        encoded_scaler_list = encodeHashStyle(column_list)
+        self.scalerFilePath = os.path.join(self.rootPath, self.scaling_method, encoded_scaler_list, "scaler.pkl")
+        print(self.scalerFilePath)
 
     def _setScaler(self):
         """
@@ -237,3 +265,9 @@ class DataInverseScaler():
         inverseScaledData = self.scaler.inverse_transform(self.dataToBeScaled)
         self.inverseScaledData= pd.DataFrame(inverseScaledData, index =self.dataToBeScaled.index, columns =self.dataToBeScaled.columns) 
         return self.inverseScaledData
+
+def encodeHashStyle(text):
+    import hashlib
+    hash_object = hashlib.md5(str(text).encode('utf-8'))
+    hashedText= hash_object.hexdigest()
+    return hashedText

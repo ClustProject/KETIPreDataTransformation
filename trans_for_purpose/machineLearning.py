@@ -1,5 +1,14 @@
 from torch.utils.data import TensorDataset, DataLoader
 import torch
+
+def splitDataByRatio(data, splitRatio):
+        """
+        Split Data By Ratio. It usually makes train/validation data and train/test data
+        """
+        length1=int(len(data)*splitRatio)
+        data1, data2 = data[:length1], data[length1:]
+        return data1, data2
+
 class LSTMData():
     def __init__(self):
         pass
@@ -12,14 +21,6 @@ class LSTMData():
         print("features shape:", features.shape, "targets shape: ", targets.shape)
         return dataSet, loader
 
-
-    def splitDataByRatio(self, data, splitRatio):
-        """
-        Split Data By Ratio. It usually makes train/validation data and train/test data
-        """
-        length1=int(len(data)*splitRatio)
-        data1, data2 = data[:length1], data[length1:]
-        return data1, data2
 
     def transformXyArr(self, data, transformParameter, CleanParam=True):
         feature_col= transformParameter["feature_col"]
