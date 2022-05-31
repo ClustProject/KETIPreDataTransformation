@@ -108,11 +108,35 @@ class DataScaler():
         Returns: scaler
             scaler
         """
-        with open(jsonFilePath, 'r') as json_file:
-            jsonText = json.load(json_file)
+        if os.path.isfile(jsonFilePath):
+            pass
+        else: 
+            directory = os.path.dirname(jsonFilePath)
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+            with open(jsonFilePath, 'w') as f:
+                data={}
+                json.dump(data, f, indent=2)
+                print("New json file is created from data.json file")
+
+        if os.path.isfile(jsonFilePath):
+            with open(jsonFilePath, 'r') as json_file:
+                jsonText = json.load(json_file)
+        
         return jsonText
 
     def writeJson(self, jsonFilePath, text):
+        if os.path.isfile(jsonFilePath):
+            pass
+        else: 
+            directory = os.path.dirname(jsonFilePath)
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+            with open(jsonFilePath, 'w') as f:
+                data={}
+                json.dump(data, f, indent=2)
+                print("New json file is created from data.json file")
+                
         with open(jsonFilePath, 'w') as outfile:
             outfile.write(json.dumps(text))
 
@@ -271,3 +295,29 @@ def encodeHashStyle(text):
     hash_object = hashlib.md5(str(text).encode('utf-8'))
     hashedText= hash_object.hexdigest()
     return hashedText
+
+
+def getScaledData(data, feature_col_list, scalerRootpath, scale_method):
+    """This method makes scaled data.
+
+        This function finds scaler based and scale numpy array.
+
+        Note:
+            Original scaler was generated and stored before using this method for feature_col_list features.
+
+        Args:
+            data (np.array): data array, size = (past_step, len(feature_col_list))
+            feature_col_list (list[string]): feature list for scaler
+            scalerRootpath (string): rootPath for scaler
+
+        Returns:
+            scaledData (pd.DataFrame): scaled Output Data
+        
+    """
+    data_df = pd.DataFrame(data, columns=feature_col_list, index=range(len(data)))
+    
+    DS = DataScaler(scale_method, scalerRootpath)
+    DS.setScaleColumns(list(data_df.columns))
+    DS.loadScaler()
+    scaledData = DS.transform(data_df)
+    return scaledData
