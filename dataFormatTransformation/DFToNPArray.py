@@ -16,7 +16,7 @@ def transDFtoNP(dfX, dfy):
     :type: numpy array
     
     """
-    from datetime import timedelta
+    import datetime as dt
     import numpy as np
     start = dfy.index[0].date()
     end = dfy.index[-1].date()
@@ -28,8 +28,9 @@ def transDFtoNP(dfX, dfy):
     print(dateList)
 
     for startDate in dateList:
-        dfX_partial = dfX[startDate:startDate-timedelta(seconds = 1)]
-        dfy_partial = dfy[startDate:startDate-timedelta(seconds = 1)]
+        endDate  = dt.datetime.combine(startDate, dt.time(23, 59, 59, 59))
+        dfX_partial = dfX[startDate:endDate]
+        dfy_partial = dfy[startDate:endDate]
         X_partial = dfX_partial.values.transpose()
         y_partial = dfy_partial.values[0][0]
         X.append (X_partial)
