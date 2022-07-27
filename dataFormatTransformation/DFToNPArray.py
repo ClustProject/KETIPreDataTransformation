@@ -25,7 +25,6 @@ def transDFtoNP(dfX, dfy):
     y= []
 
     dateList = dfX.index.map(lambda t: t.date()).unique()
-    print(dateList)
 
     for startDate in dateList:
         endDate  = dt.datetime.combine(startDate, dt.time(23, 59, 59, 59))
