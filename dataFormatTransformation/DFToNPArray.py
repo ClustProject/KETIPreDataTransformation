@@ -23,14 +23,18 @@ def transDFtoNP(dfX, dfy):
     date = start
     X =[]
     y= []
-    while (date <= end) :
-        dfX_partial = dfX[dfX.index.date == date]
-        dfy_partial = dfy[dfy.index.date == date]
+
+    dateList = dfX.index.map(lambda t: t.date()).unique()
+    print(dateList)
+
+    for startDate in dateList:
+        dfX_partial = dfX[startDate:startDate-timedelta(seconds = 1)]
+        dfy_partial = dfy[startDate:startDate-timedelta(seconds = 1)]
         X_partial = dfX_partial.values.transpose()
         y_partial = dfy_partial.values[0][0]
         X.append (X_partial)
         y.append (y_partial)
-        date = date + timedelta(days=1)
+
     X = np.array(X)
     y = np.array(y)
     
