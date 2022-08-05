@@ -1,12 +1,19 @@
 from torch.utils.data import TensorDataset, DataLoader
 import torch
+import numpy as np
 
-def splitDataByRatio(data, splitRatio):
+def splitDataByRatio(data, splitRatio, mode=None):
         """
         Split Data By Ratio. It usually makes train/validation data and train/test data
         """
-        length1=int(len(data)*splitRatio)
-        data1, data2 = data[:length1], data[length1:]
+        if mode == "classification":
+            data_date = np.unique(data.index.date)
+            length1 = int(len(data_date)*splitRatio)
+            data1, data2 = data[:str(data_date[length1])], data[str(data_date[length1+1]):]
+            
+        else:
+            length1=int(len(data)*splitRatio)
+            data1, data2 = data[:length1], data[length1:]
         return data1, data2
 
 class LSTMData():
