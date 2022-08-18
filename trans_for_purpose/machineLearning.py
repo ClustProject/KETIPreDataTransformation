@@ -6,7 +6,7 @@ def splitDataByRatio(data, splitRatio, mode=None):
         """
         Split Data By Ratio. It usually makes train/validation data and train/test data
         """
-        if mode == "classification":
+        if mode == "Classification":
             data_date = np.unique(data.index.date)
             length1 = int(len(data_date)*splitRatio)
             data1, data2 = data[:str(data_date[length1])], data[str(data_date[length1+1]):]
