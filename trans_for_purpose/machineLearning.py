@@ -10,6 +10,8 @@ def splitDataByRatio(data, splitRatio, mode=None):
             data_date = np.unique(data.index.date)
             length1 = int(len(data_date)*splitRatio)
             data1, data2 = data[:str(data_date[length1])], data[str(data_date[length1+1]):]
+        elif mode == "Classification_freq_1s":
+            pass
             
         else:
             length1=int(len(data)*splitRatio)
