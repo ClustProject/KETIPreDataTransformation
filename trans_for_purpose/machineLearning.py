@@ -2,16 +2,29 @@ from torch.utils.data import TensorDataset, DataLoader
 import torch
 import numpy as np
 
-def splitDataByRatio(data, splitRatio, mode=None):
+def splitDataByRatio(data, splitRatio, mode=None, windows=None):
         """
         Split Data By Ratio. It usually makes train/validation data and train/test data
         """
-        if mode == "Classification":
+        if mode == "Classification": # Xdata Freq : 11분 15초 / ydata Freq : 1 Days
             data_date = np.unique(data.index.date)
             length1 = int(len(data_date)*splitRatio)
             data1, data2 = data[:str(data_date[length1])], data[str(data_date[length1+1]):]
-        elif mode == "Classification_freq_1s":
-            pass
+        elif mode == "windows_split": # 입력 windows 를 기준으로 split
+            import math
+            roundNum = math.ceil(len(data)/windows)
+    
+            data_date = []
+            for i in range(roundNum):
+                try:
+                    data_date.append(data.iloc[[(i+1)*windows-1]].index)
+                except IndexError: # 결합 데이터의 길이가 공통 기간으로 기준 삼을 경우 y class data와 끝 시간이 일치하지 않은 경우 (Classification)
+                    print("data length : ",len(data), " but  {} th windows index : ".format(i), (i+1)*windows-1)
+                    data_date.append(data.iloc[[len(data)-1]].index)
+
+            length1 = int(len(data_date) * splitRatio)
+            data1 = data[:str(data_date[length1-1][0])]
+            data2 = data[len(data1):]
             
         else:
             length1=int(len(data)*splitRatio)
