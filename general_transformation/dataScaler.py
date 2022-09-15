@@ -10,7 +10,7 @@ class DataScaler():
     def __init__(self, scaling_method, rootPath):
         """
         This class generates a scaler and transforms the data. 
-        - All information should be described in [rootPath]/scaler_list.json. Before use this class, you can make the empty json file.
+        - All information should be described in [rootPath]/scaler_list.json. Before use this class, you should make the empty json file.
         - Initially, only {} should be written in the json file.
         --- setNewScaler(data) function: it makes a new Scaler, even if there is previous scaler. And
         Checks whether the scaler file is already saved, and if it exists, it is loaded and used. 
