@@ -46,3 +46,35 @@ def transNPtoDF(X, y, startTime):
         df_X =pd.concat([df_X, df])
 
     return df_X, df_y
+
+def trans2NPtoDF(array, startTime, data_freq):
+    """
+    Transform 2D Array to DataFrame with indexes and columns transposed.
+    
+    - array.shape (featureNum, sequenceNum )
+
+    :param array: 2D Array
+    :type: 2D numpy array
+    
+    :param startTime: start Time of DataFrame Index
+    :type: string
+    
+    :param data_freq: time frequency of DataFrame
+    :type: string
+
+    >>> startTime : "2022-01-01"
+    >>> data_freq : "1S"
+
+
+    :return df: DataFrame with time stamp as index
+    :rtype: DataFrame
+    
+    """
+    seq_len = array.shape[1]
+    data_trans = pd.DataFrame(array)
+    df = data_trans.T
+    timeIndex = pd.date_range(start=startTime, freq = data_freq, periods=seq_len)
+    df['datetime'] = timeIndex
+    df.set_index(['datetime'], inplace = True)
+    
+    return df
