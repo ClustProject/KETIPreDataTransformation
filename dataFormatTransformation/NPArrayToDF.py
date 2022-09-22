@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def transNPtoDF(X, y, startTime):
+def trans3NPtoDF(X, y, startTime):
     """
     Make Dataframe by input data condition.
     Every Sample of X has (featureNum X sequenceNum) datapoints.
