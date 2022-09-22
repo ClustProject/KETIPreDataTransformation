@@ -42,19 +42,18 @@ def getSplitAndTransformDataByFrequency(data, splitNum, splitInterval, transform
             trans_data = data_c.resample(transformFreqList[num]).first()
         else: # freqTransformMode == "sampling"
             trans_data = data_c.resample(transformFreqList[num]).mean()
-
+        
+        ## get split data
+        if splitNum != 1:
+            end_interval = start_interval+splitInterval[num]
+            trans_data = trans_data[columns[start_interval:end_interval]]
+            start_interval = end_interval
+        
+        ## get split data set
+        dataset[num] = trans_data
+            
         print("split num : ", num)
         print("split data shape : ", trans_data.shape)
         print("------")
-        
-        if splitNum == 1:
-            dataset = trans_data.copy()
-        ## get split data
-        else:
-            end_interval = start_interval+splitInterval[num]
-            split_data = trans_data[columns[start_interval:end_interval]]
-            start_interval = end_interval
-            ## get split data set
-            dataset[num] = split_data
 
     return dataset
