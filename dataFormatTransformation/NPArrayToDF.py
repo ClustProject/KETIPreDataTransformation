@@ -1,5 +1,5 @@
 import pandas as pd
-
+from datetime import timedelta
 
 def trans3NPtoDF(X, y, startTime):
     """
@@ -27,7 +27,6 @@ def trans3NPtoDF(X, y, startTime):
     featureNum = X.shape[1]
     sequenceNum = X.shape[2]
 
-    from datetime import timedelta 
     interval = timedelta(days=1)
     duration = interval/sequenceNum
 
@@ -46,6 +45,17 @@ def trans3NPtoDF(X, y, startTime):
         df_X =pd.concat([df_X, df])
 
     return df_X, df_y
+
+def trans3NPtoDFbyInputFreq(array, startTime, freq):
+    startTimebyData = startTime
+    data = pd.DataFrame()
+    for array2D_data in array:
+        df = trans2NPtoDF(array2D_data, startTimebyData, freq)
+        startTimebyData = df.index[-1] + pd.Timedelta(freq)
+        
+        data = pd.concat([data, df])
+        
+    return data
 
 def trans2NPtoDF(array, startTime, data_freq):
     """

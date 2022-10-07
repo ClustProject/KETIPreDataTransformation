@@ -2,7 +2,7 @@ import os
 import sys
 import json
 import pandas as pd
-import numpy as np
+#import numpy as np
 
 sys.path.append("../")
 sys.path.append("../../")
@@ -35,19 +35,18 @@ def getSplitAndTransformDataByFrequency(data, splitNum, splitInterval, transform
     dataset = {}
     start_interval = 0
     for num in range(splitNum):
-        data_c = data.copy()
-        ## 서로 다른 주기 별 데이터 생성
-        if freqTransformMode == "drop":
-            ## data frequency transform
-            trans_data = data_c.resample(transformFreqList[num]).first()
-        else: # freqTransformMode == "sampling"
-            trans_data = data_c.resample(transformFreqList[num]).mean()
-        
         ## get split data
         if splitNum != 1:
             end_interval = start_interval+splitInterval[num]
-            trans_data = trans_data[columns[start_interval:end_interval]]
+            split_data = data[columns[start_interval:end_interval]]
             start_interval = end_interval
+        
+        ## 서로 다른 주기 별 데이터 생성
+        if freqTransformMode == "drop":
+            ## data frequency transform
+            trans_data = split_data.resample(transformFreqList[num]).first()
+        else: # freqTransformMode == "sampling"
+            trans_data = split_data.resample(transformFreqList[num]).mean()
         
         ## get split data set
         dataset[num] = trans_data
