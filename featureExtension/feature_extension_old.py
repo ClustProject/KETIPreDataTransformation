@@ -35,7 +35,6 @@ class FeatureExtension():
             ax.axis('tight')
         return data
 
-
     def add_ratio_features(self, data):
         import itertools
         tag ='_ratio'

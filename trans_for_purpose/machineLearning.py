@@ -72,7 +72,6 @@ class LSTMData():
                 data_y = y[future_num:]
         return data_X, data_y
 
-    
     def _getCleanXy(self, X, y, past_step, CleanParam):
             """
             If clean param is True -> get only data without NaN
@@ -104,7 +103,6 @@ class LSTMData():
     
 """
 아래 코드 쓰이는가?
-
 """
 import pandas as pd
 import numpy as np

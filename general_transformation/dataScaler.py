@@ -73,7 +73,6 @@ class DataScaler():
         print(self.scale_columns)
         self.writeJson(self.scalerListJsonFilePath, scaler_list)
         
-
     def setScaleColumns(self, scaleColumns):
         """
         The function can be set to scale only a limited columns. (use self.setScaleColumns)
@@ -88,7 +87,6 @@ class DataScaler():
         >>> DS.setScaleColumns(scaleColumns) # can skip
         """
         self.scale_columns = scaleColumns
-
 
     def readJson(self, jsonFilePath):
         """
@@ -191,7 +189,6 @@ class DataScaler():
             print("No Scaler")
             self.scaler= None
 
-
         return self.scaler
         
     def save_scaler(self, scalerFilePath, scaler):
@@ -240,7 +237,6 @@ class DataInverseScaler():
         self.scaling_method = scaling_method #
         self.rootPath = rootPath
         
-    
     def setScaleColumns(self, column_list):
         """
         Set scale columns and get scalerFilePath

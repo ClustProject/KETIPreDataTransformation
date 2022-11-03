@@ -65,7 +65,6 @@ class DataFrameScaling():
         return output
     
 
-
 class DataInverseScaling(): 
     def __init__(self,scaling_method, target_column, scaler ,scale_columns):
         self.scaling_method = scaling_method
