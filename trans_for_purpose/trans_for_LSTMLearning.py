@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 from numpy import array
 
-
 class LearningDataSet():
     def __init__(self, learning_information):
         self.learning_information = learning_information
@@ -12,7 +11,6 @@ class LearningDataSet():
         self.target_feature = learning_information['target_feature']
         print("future num:", self.future_num)
     
-
     def get_LSTMStyle_X(self, data_X):
         print("self.past_num:", self.past_num)
         # if learning method is LSTM
@@ -72,8 +70,6 @@ class LearningDataSet():
             
         return data_X, data_y
     
-    
-   
     def getCleanXy(self, X, y, n_steps):
         Clean_X, Clean_y = list(), list()
         Nan_num=0
