@@ -14,7 +14,7 @@ class PeriodicFeature():
         It calculats sine and cosine transform value of the given feature.
         Example
         -------
-        >>> from KETIPreDataTransformation.featureExtension.periodicFeatureExtension import PeriodicFeature
+        >>> from clust.transform.featureExtension.periodicFeatureExtension import PeriodicFeature
         >>> PF = PeriodicFeature()
         >>> df_extended =  PF.extendCosSinFeature(data, 'hour', 24, 0, True)
 
