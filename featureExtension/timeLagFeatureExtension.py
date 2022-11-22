@@ -9,7 +9,7 @@ class TimeLagFeature():
         This function generate time-lags-Features and extend original dataframe
         Example
         -------
-        >>> from KETIPreDataTransformation.featureExtension.timeLagFeatureExtension import class TimeLagFeature
+        >>> from Clust.clust.transformation.featureExtension.timeLagFeatureExtension import class TimeLagFeature
         >>> TLF = TimeLagFeature()
         >>> lag = 100
         >>> columnNameList=['value']

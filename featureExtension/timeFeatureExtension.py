@@ -9,7 +9,7 @@ class TimeFeature():
         and extend original dataframe
         Example
         -------
-        >>> from KETIPreDataTransformation.featureExtension.timeFeatureExtension import TimeFeature
+        >>> from Clust.clust.transformation.featureExtension.timeFeatureExtension import TimeFeature
         >>> TF = TimeFeature()
         >>> df_generated = TF.extendNewTimeFeatureByTimeindex(df)
 
@@ -39,7 +39,7 @@ class TimeFeature():
         
         Example
         -------
-        >>> from KETIPreDataTransformation.featureExtension.timeFeatureExtension import TimeFeature
+        >>> from Clust.clust.transformation.featureExtension.timeFeatureExtension import TimeFeature
         >>> TF = TimeFeature()
         >>> extended_df = TF.extendWorkDayOffFeature(df_features, us_holidays)
 
@@ -72,7 +72,7 @@ class TimeFeature():
         
         Example
         -------
-        >>> from KETIPreDataTransformation.featureExtension.timeFeatureExtension import TimeFeature
+        >>> from Clust.clust.transformation.featureExtension.timeFeatureExtension import TimeFeature
         >>> TF = TimeFeature()
         >>> extended_df = TF.extendWorkTimeFeature(origin_df, workStartTime, workEndTime)
 
